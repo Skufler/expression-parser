@@ -7,30 +7,14 @@
 #IncludeRegexTransform: 
 
 C:/Users/Skufler/CLionProjects/super_calculator/main.cpp
-utility
--
-utility
--
-utility
--
 iostream
 -
-cmath
--
 string
--
-vector
--
-algorithm
--
-stack
 -
 cassert
 -
 sstream
 -
 functional
--
-utility
 -
 

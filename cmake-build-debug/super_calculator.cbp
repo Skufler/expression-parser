@@ -80,9 +80,6 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="C:/Users/Skufler/CLionProjects/super_calculator/eval.cpp">
-			<Option target="super_calculator"/>
-		</Unit>
 		<Unit filename="C:/Users/Skufler/CLionProjects/super_calculator/main.cpp">
 			<Option target="super_calculator"/>
 		</Unit>

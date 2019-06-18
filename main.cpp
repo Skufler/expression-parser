@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <cassert>
 #include <sstream>
 #include <functional>
@@ -17,13 +18,14 @@ namespace engine {
     };
 
     class Tokenizer {
+    private:
+        std::string input;
     public:
         Token current_token = engine::number;
         char current_char = 1;
         double number = 0;
 
         int position = 0;
-        std::string input;
 
         void next_char() {
             char symbol = this->input[this->position];
@@ -32,6 +34,10 @@ namespace engine {
             this->current_char = symbol < 0 ? '\0' : symbol;
         }
 
+        /*
+         * Input setter
+         * Use for request your computational problem
+         * */
         void set_input(std::string _input) {
             position = 0;
             current_char = 1;
@@ -98,13 +104,16 @@ namespace engine {
             throw std::logic_error(&"Not supported type of operator: " [ current_char]);
         }
 
-        explicit Tokenizer(std::string input) {
-            this->input = std::move(input);
+        /*
+         * Use input setter instead
+         *
+            explicit Tokenizer(std::string input) {
+                this->input = std::move(input);
 
-            next_char();
-            next_token();
-        }
-
+                next_char();
+                next_token();
+            }
+        */
         Tokenizer() = default;
     };
 
@@ -165,10 +174,17 @@ namespace engine {
 
     class Parser {
     public:
+        double answer = 0;
         Tokenizer *tokenizer;
 
         explicit Parser(Tokenizer *tokenizer) {
             this->tokenizer = tokenizer;
+        }
+
+        void clear() {
+            this->tokenizer->position = 0;
+            this->tokenizer->current_char = 1;
+            this->tokenizer->current_token = engine::eof;
         }
 
         Node* parse_expression() {
@@ -177,6 +193,8 @@ namespace engine {
             if (tokenizer->current_token != engine::eof)
                 throw std::logic_error("Not understandable expression");
 
+            clear();
+            this->answer = expression->eval();
             return expression;
         }
 
@@ -270,42 +288,18 @@ namespace engine {
 
 int main(int argc, char *argv[]) {
     std::string str;
-    std::cin >> str;
+    std::getline(std::cin, str);
 
-    // str = "10 + 20";
-    auto tokenizer = new engine::Tokenizer(str);
+    auto tokenizer = new engine::Tokenizer();
     auto parser = new engine::Parser(tokenizer);
 
-    std::cout << parser->parse_expression() << std::endl;
+    tokenizer->set_input(str);
+    parser->parse_expression();
 
-    assert(parser->parse_expression()->eval() == 30);
-    parser->tokenizer->set_input("10 - 20");
-    assert(parser->parse_expression()->eval() == -10 && "2");
-    parser->tokenizer->set_input("10 + 20 - 40 + 100");
-    assert(parser->parse_expression()->eval() == 90 &&"3");
-    parser->tokenizer->set_input("-10");
-    assert(parser->parse_expression()->eval() == -10 && "4");
-    parser->tokenizer->set_input("+10");
-    assert(parser->parse_expression()->eval() == 10 &&"5");
-    parser->tokenizer->set_input("--10");
-    assert(parser->parse_expression()->eval() == 10 && "6");
-    parser->tokenizer->set_input("--++-+-10");
-    assert(parser->parse_expression()->eval() == 10 && "7");
-    parser->tokenizer->set_input("10 + -20 - +30");
-    assert(parser->parse_expression()->eval() == -40 && "8");
-    parser->tokenizer->set_input("10 * 20");
-    assert(parser->parse_expression()->eval() == 200 && "9");
-    parser->tokenizer->set_input("10 / 20");
-    assert(parser->parse_expression()->eval() == 0.5 && "10");
-    parser->tokenizer->set_input("10 * 20 / 50");
-    assert(parser->parse_expression()->eval() == 4 && "11");
-    parser->tokenizer->set_input("10 + 20 * 30");
-    assert(parser->parse_expression()->eval() == 610 && "12");
-    parser->tokenizer->set_input("(10 + 20) * 30");
-    assert(parser->parse_expression()->eval() == 900 && "13");
-    parser->tokenizer->set_input("-(10 + 20) * 30");
-    assert(parser->parse_expression()->eval() == -900 && "14");
+    std::cout << parser->answer << std::endl;
 
-    std::cout << parser->parse_expression()->eval() << std::endl;
+    assert(parser->answer == 4);
+
+    std::cout << "Tests passed" << std::endl;
     return 0;
 }

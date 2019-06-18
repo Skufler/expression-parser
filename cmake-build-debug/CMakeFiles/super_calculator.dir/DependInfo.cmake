@@ -4,7 +4,6 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "C:/Users/Skufler/CLionProjects/super_calculator/eval.cpp" "C:/Users/Skufler/CLionProjects/super_calculator/cmake-build-debug/CMakeFiles/super_calculator.dir/eval.cpp.obj"
   "C:/Users/Skufler/CLionProjects/super_calculator/main.cpp" "C:/Users/Skufler/CLionProjects/super_calculator/cmake-build-debug/CMakeFiles/super_calculator.dir/main.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
