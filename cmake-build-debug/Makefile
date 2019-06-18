@@ -122,6 +122,33 @@ super_calculator/fast:
 	$(MAKE) -f CMakeFiles\super_calculator.dir\build.make CMakeFiles/super_calculator.dir/build
 .PHONY : super_calculator/fast
 
+eval.obj: eval.cpp.obj
+
+.PHONY : eval.obj
+
+# target to build an object file
+eval.cpp.obj:
+	$(MAKE) -f CMakeFiles\super_calculator.dir\build.make CMakeFiles/super_calculator.dir/eval.cpp.obj
+.PHONY : eval.cpp.obj
+
+eval.i: eval.cpp.i
+
+.PHONY : eval.i
+
+# target to preprocess a source file
+eval.cpp.i:
+	$(MAKE) -f CMakeFiles\super_calculator.dir\build.make CMakeFiles/super_calculator.dir/eval.cpp.i
+.PHONY : eval.cpp.i
+
+eval.s: eval.cpp.s
+
+.PHONY : eval.s
+
+# target to generate assembly for a file
+eval.cpp.s:
+	$(MAKE) -f CMakeFiles\super_calculator.dir\build.make CMakeFiles/super_calculator.dir/eval.cpp.s
+.PHONY : eval.cpp.s
+
 main.obj: main.cpp.obj
 
 .PHONY : main.obj
@@ -158,6 +185,9 @@ help:
 	@echo ... super_calculator
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... eval.obj
+	@echo ... eval.i
+	@echo ... eval.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
