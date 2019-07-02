@@ -6,6 +6,7 @@
 
 
 namespace engine {
+    // Типы символов, которые может обработать калькулятор
     enum Token {
         addition,
         subtraction,
@@ -17,8 +18,10 @@ namespace engine {
         eof,
     };
 
+    // Класс бьет строку по токенам
     class Tokenizer {
     private:
+        // выражение, которое считает калькулятор
         std::string input;
     public:
         Token current_token = engine::number;
@@ -49,10 +52,16 @@ namespace engine {
         }
 
         void next_token() {
+            // пропускаем пробелы
             while (this->current_char == ' ') {
                 this->next_char();
             }
 
+            /*
+             * Если не пробел, то оперделяем
+             * какой из доступных символов
+             *
+             * */
             switch (this->current_char) {
                 case '\0':
                     this->current_token = engine::eof;
@@ -83,23 +92,24 @@ namespace engine {
                     return;
             }
 
-
-            if (isdigit(this->current_char) || this->current_char =='.') {
+            // обрабатываем число
+            if (isdigit(this->current_char) || this->current_char == '.') {
                 bool is_decimal = false;
                 std::stringstream string_builder;
 
-                while (isdigit(this->current_char) || (!is_decimal && this->current_char == '.'))
-                {
+                while (isdigit(this->current_char) || (!is_decimal && this->current_char == '.')) {
                     string_builder << this->current_char;
                     is_decimal = this->current_char == '.';
                     next_char();
                 }
 
+                // конвертируем строку в число
                 this->number = strtod(string_builder.str().c_str(), nullptr);
                 this->current_token = engine::number;
                 return;
             }
 
+            // Получили символ, который не поддерживается калькулятором
             std::cout << "Current char : |" << current_char << "|" << std::endl;
             throw std::logic_error(&"Not supported type of operator: " [ current_char]);
         }
@@ -122,6 +132,7 @@ namespace engine {
         virtual double eval() = 0;
     };
 
+    // Нода для числа
     class NumberNode : public Node {
     public:
         double number;
@@ -135,40 +146,42 @@ namespace engine {
         }
     };
 
+    // Нода для бинарных операций
     class BinaryOperationNode : public Node {
     public:
-        Node *left;
-        Node *right;
+        Node *left_leaf;
+        Node *right_leaf;
         std::function<double(double, double)> operation;
 
-        BinaryOperationNode(Node *left, Node *right, std::function<double(double, double)> operation) {
-            this->left = left;
-            this->right = right;
+        BinaryOperationNode(Node *left_leaf, Node *right_leaf, std::function<double(double, double)> operation) {
+            this->left_leaf = left_leaf;
+            this->right_leaf = right_leaf;
             this->operation = std::move(operation);
         }
 
         double eval() override {
-            auto left_value = left->eval();
-            auto right_value = right->eval();
+            auto left_leaf_value = left_leaf->eval();
+            auto right_leaf_value = right_leaf->eval();
 
-            return operation(left_value, right_value);
+            return operation(left_leaf_value, right_leaf_value);
         }
     };
 
+    // Нода для унарных операций
     class UnaryOperationNode : public Node {
     public:
-        Node *right;
+        Node *right_leaf;
         std::function<double(double)> operation;
 
-        UnaryOperationNode(Node *right, std::function<double(double)> operation) {
-            this->right=right;
+        UnaryOperationNode(Node *right_leaf, std::function<double(double)> operation) {
+            this->right_leaf=right_leaf;
             this->operation = std::move(operation);
         }
 
         double eval() override {
-            auto right_value = right->eval();
+            auto right_leaf_value = right_leaf->eval();
 
-            return operation(right_value);
+            return operation(right_leaf_value);
         }
     };
 
@@ -187,6 +200,7 @@ namespace engine {
             this->tokenizer->current_token = engine::eof;
         }
 
+        // Обрабатываем строку до конца
         Node* parse_expression() {
             Node *expression = parse_addition_and_subtraction_operators();
 
@@ -194,10 +208,12 @@ namespace engine {
                 throw std::logic_error("Not understandable expression");
 
             clear();
+
             this->answer = expression->eval();
             return expression;
         }
 
+        // Обрабатываем операции сложения и вычитания
         Node* parse_addition_and_subtraction_operators() {
             auto left_leaf = parse_multiplication_and_division_operators();
 
@@ -212,20 +228,19 @@ namespace engine {
 
                 if (operation == nullptr)
                     return left_leaf;
-
                 tokenizer->next_token();
 
                 auto right_leaf = parse_multiplication_and_division_operators();
+
                 left_leaf = new BinaryOperationNode(left_leaf, right_leaf, operation);
             }
         }
 
         Node* parse_multiplication_and_division_operators() {
-            auto left = parse_unary_operator();
+            auto left_leaf = parse_unary_operator();
 
             while (true) {
                 std::function<double(double, double)> operation = nullptr;
-
                 if (tokenizer->current_token == engine::multiplication) {
                     operation = [](double a, double b) -> double { return a * b; };
                 }
@@ -234,12 +249,12 @@ namespace engine {
                 }
 
                 if (operation == nullptr)
-                    return left;
+                    return left_leaf;
                 tokenizer->next_token();
 
-                auto right = parse_unary_operator();
+                auto right_leaf = parse_unary_operator();
 
-                left = new BinaryOperationNode(left, right, operation);
+                left_leaf = new BinaryOperationNode(left_leaf, right_leaf, operation);
             }
         }
 
@@ -288,18 +303,17 @@ namespace engine {
 
 int main(int argc, char *argv[]) {
     std::string str;
-    std::getline(std::cin, str);
+    if (argc == 1) {
+        std::getline(std::cin, str);
+    } else {
+        str = std::string(argv[1]);
+    }
 
-    auto tokenizer = new engine::Tokenizer();
-    auto parser = new engine::Parser(tokenizer);
+    auto parser = new engine::Parser(new engine::Tokenizer);
 
-    tokenizer->set_input(str);
+    parser->tokenizer->set_input(str);
     parser->parse_expression();
 
     std::cout << parser->answer << std::endl;
-
-    assert(parser->answer == 4);
-
-    std::cout << "Tests passed" << std::endl;
     return 0;
 }
